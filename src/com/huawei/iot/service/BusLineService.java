@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -98,7 +99,8 @@ public class BusLineService {
 				latestBus.put(DBConstants.DEVICE_REMAIN_TIMES, (String) busMap.get(DIConstants.REMAIN_TIME));
 				latestBusList.add(latestBus);
 			}
-			resultList.add(latestBusList);
+			List sortedBusList = getSortedBusList(latestBusList);
+			resultList.add(sortedBusList);
 		}
 		
 		return resultList;
@@ -114,8 +116,7 @@ public class BusLineService {
 			Map<String, Object> lineMap = new HashMap<String,Object>();
 			lineMap.put("lineInfor", busLine);
 			//3. construct the datas of buses to display
-			Map<String, Object> busesMap = new HashMap<String, Object>();
-			List busList = new ArrayList();
+			List<Map<String, String>> busList = new ArrayList<Map<String, String>>();
 			for (Map<String, Object> busMap : buses) {
 				if (busLine.getLineNum().equals(busMap.get(DBConstants.BUSLINE_NUM))) {
 					Map<String, String> latestBus = new HashMap<String, String>();
@@ -126,16 +127,35 @@ public class BusLineService {
 					String remainStops = (20 - Integer.parseInt(position)) + "";
 					latestBus.put(DBConstants.DEVICE_REMAIN_STOPS, remainStops);
 					latestBus.put(DBConstants.DEVICE_REMAIN_TIMES, (String) busMap.get(DIConstants.REMAIN_TIME));
-					busesMap.put((String) busMap.get(DIConstants.DEVICE_NAME), latestBus);
+					
 					busList.add(latestBus);
 				}
 			}
-			lineMap.put("buses", busList);
+			//sort the buses and get top 3
+			List sortedBusList = getSortedBusList(busList);
+			lineMap.put("buses", sortedBusList);
 			resultList.add(lineMap);
 		}
 		return resultList;
 	}
 	
+	private static List getSortedBusList(List<Map<String, String>> busList) {
+		// TODO Auto-generated method stub
+		List resultList = new ArrayList();
+		Map<String, Object> timeMap = new TreeMap<String, Object>();
+		for(Map<String, String> busMap : busList){
+			timeMap.put(busMap.get(DBConstants.DEVICE_REMAIN_TIMES), busMap);
+		}
+		int index = 0;
+		for(Object newBus : timeMap.values() ){
+			if(index < 3){
+				resultList.add(newBus);
+				index ++;
+			}
+		}
+		return resultList;
+	}
+
 	private static String getCurrentPosition(String currentPositionId) {
 		// TODO Auto-generated method stub
 		String position = "";
