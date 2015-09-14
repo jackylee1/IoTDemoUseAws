@@ -2,10 +2,11 @@ package com.huawei.iot.service;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -19,6 +20,7 @@ import com.huawei.iot.db.DBConstants;
 import com.huawei.iot.db.DBOperator;
 import com.huawei.iot.db.DIConstants;
 import com.huawei.iot.model.BusLine;
+import com.huawei.iot.model.Station;
 import com.huawei.iot.util.BusLineXmlImpl;
 import com.huawei.iot.util.TransferDI2Result;
 
@@ -94,9 +96,23 @@ public class BusLineService {
 				String currentPositionId = (String) busMap.get(DIConstants.POSITION_ID);
 				latestBus.put(DBConstants.DEVICE_POSITION_ID, currentPositionId);
 				String position = getCurrentPosition(currentPositionId);
-				String remainStops = (20 - Integer.parseInt(position)) + "";
+				//3.1 get the remain stops from positionId
+				String remainStops = getRemainStops(Integer.parseInt(position), Integer.parseInt(positionId));
+				//String remainStops = (20 - Integer.parseInt(position)) + "";
+				//3.2 get the remain time from positionId
+				String currentRemainTime = "0";
+				List<Station> stations = currentLine.getStations();
+				for(Station station : stations){
+					if(positionId.equals(station.getId())){
+						currentRemainTime = station.getRemainTime();
+						break;
+					}
+				}
+				System.out.println("Get the line, current remain time: " + currentRemainTime);
+				String remainTime = getRemainTime((String) busMap.get(DIConstants.REMAIN_TIME), currentRemainTime);
+				System.out.println("Get the line, remain time: " + remainTime);
 				latestBus.put(DBConstants.DEVICE_REMAIN_STOPS, remainStops);
-				latestBus.put(DBConstants.DEVICE_REMAIN_TIMES, (String) busMap.get(DIConstants.REMAIN_TIME));
+				latestBus.put(DBConstants.DEVICE_REMAIN_TIMES, remainTime);
 				latestBusList.add(latestBus);
 			}
 			List sortedBusList = getSortedBusList(latestBusList);
@@ -106,6 +122,31 @@ public class BusLineService {
 		return resultList;
 	}
 	
+	private static String getRemainTime(String busRemainTime, String currentRemainTime) {
+		// TODO Auto-generated method stub
+		//2. get left time
+		String leftTime = "0";
+		int intBusRemainTime = Integer.parseInt(busRemainTime);
+		int intCurrentRemainTime = Integer.parseInt(currentRemainTime);
+		if(intBusRemainTime >= intCurrentRemainTime){
+			leftTime = (intBusRemainTime - intCurrentRemainTime) + "";
+		}else {
+			leftTime = (intBusRemainTime + 59 - intCurrentRemainTime) + "";
+		}
+		return leftTime;
+	}
+
+	private static String getRemainStops(int busPosition, int mPosition) {
+		// TODO Auto-generated method stub
+		String remainStops = "0";
+		if(mPosition >= busPosition){
+			remainStops = (mPosition - busPosition) + "";
+		}else{
+			remainStops = (mPosition + 20 - busPosition) + "";
+		}
+		return remainStops;
+	}
+
 	public static List getFavorLines(){
 		List resultList = new ArrayList();
 		//1. get favor lines from s3
@@ -142,8 +183,52 @@ public class BusLineService {
 	private static List getSortedBusList(List<Map<String, String>> busList) {
 		// TODO Auto-generated method stub
 		List resultList = new ArrayList();
-		Map<String, Object> timeMap = new TreeMap<String, Object>();
+		//1. sort the list to new list
+		/*for(int i=0;i<busList.size();i++){
+			Map<String, String> bus = busList.get(i);
+			int temTime = Integer.parseInt(bus.get(DBConstants.DEVICE_REMAIN_TIMES));
+			Map<String, String> tmp = null;
+			for (int j = i; j < busList.size(); j++) {
+				 Map<String, String> bus2 = busList.get(j);
+				 int time = Integer.parseInt(bus2.get(DBConstants.DEVICE_REMAIN_TIMES));
+				 if (temTime > time) {
+	                    tmp = bus2;
+	                    busList.set(i, busList.get(j));
+	                    busList.set(j, bus2);
+	                }
+			}
+		}*/
+		Collections.sort(busList, new Comparator<Map<String,String>>() {
+
+			@Override
+			public int compare(Map<String, String> bus1, Map<String, String> bus2) {
+				// TODO Auto-generated method stub
+				String time1 = bus1.get(DBConstants.DEVICE_REMAIN_TIMES);
+				String time2 = bus2.get(DBConstants.DEVICE_REMAIN_TIMES);
+				int intTime1 = Integer.parseInt(time1);
+				int intTime2 = Integer.parseInt(time2);
+				if(intTime1 > intTime2){
+					return 1;
+				}else if(intTime1 < intTime2){
+					return -1;
+				}
+				return 0;
+			}
+		});
+		for(Map<String, String> map: busList){
+			System.out.println(map);
+		}
+		
+		int index = 0;
+		for(Map<String, String> newBus : busList){
+			if(index < 3){
+				resultList.add(newBus);
+				index ++;
+			}
+		}
+		/*Map<String, Object> timeMap = new TreeMap<String, Object>();
 		for(Map<String, String> busMap : busList){
+			System.out.println("getSortedBusList, remain time: " + busMap.get(DBConstants.DEVICE_REMAIN_TIMES));
 			timeMap.put(busMap.get(DBConstants.DEVICE_REMAIN_TIMES), busMap);
 		}
 		int index = 0;
@@ -152,7 +237,7 @@ public class BusLineService {
 				resultList.add(newBus);
 				index ++;
 			}
-		}
+		}*/
 		return resultList;
 	}
 
