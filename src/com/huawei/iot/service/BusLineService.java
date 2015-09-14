@@ -246,7 +246,7 @@ public class BusLineService {
 		String position = "";
 		//1. currentPositionId contained "_"
 		if(currentPositionId.contains("_")){
-			position = currentPositionId.split("_")[0];
+			position = currentPositionId.split("_")[1];
 		}else{
 			//2. int
 			position = currentPositionId;
