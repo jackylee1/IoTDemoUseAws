@@ -97,6 +97,7 @@ public class BusLineService {
 				latestBus.put(DBConstants.DEVICE_POSITION_ID, currentPositionId);
 				String position = getCurrentPosition(currentPositionId);
 				//3.1 get the remain stops from positionId
+				System.out.println("getTheLine, position: "+ position+", positionId "+positionId);
 				String remainStops = getRemainStops(Integer.parseInt(position), Integer.parseInt(positionId));
 				//String remainStops = (20 - Integer.parseInt(position)) + "";
 				//3.2 get the remain time from positionId
