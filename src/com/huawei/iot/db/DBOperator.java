@@ -156,7 +156,7 @@ public class DBOperator {
 
 	public static void delItems(String tblName) {
 		init();
-		for(int i=0; i<4;i++){
+		for(int i=1; i<5;i++){
 			HashMap<String, Condition> scanFilter = new HashMap<String, Condition>();
 	        Condition condition = new Condition()
 	            .withComparisonOperator(ComparisonOperator.CONTAINS.toString())
