@@ -81,6 +81,44 @@ public class DBOperator {
 			table.putItem(item);
 		}
 	}
+	
+	public static PutItemOutcome putMessage(String tblName, String content){
+		init();
+		Table table = dynamo.getTable(tblName);
+		//1. get the list of items
+		ScanRequest scanRequest = new ScanRequest(tblName);
+		List<Map<String, AttributeValue>> msgList = client.scan(scanRequest).getItems();
+		//2. get the biggest num
+		int maxId = 0;
+		for(Map<String, AttributeValue> map: msgList){
+			String currentId = map.get(DBConstants.HASH_KEY_NAME).getN();
+			if(maxId < Integer.parseInt(currentId)){
+				maxId = Integer.parseInt(currentId);
+			}
+		}
+		//3. input the item to DB
+		Item item = new Item().withNumber(DBConstants.HASH_KEY_NAME, maxId+1)
+				.withString(DBConstants.MESSAGE_CONTENT, content);
+		return table.putItem(item);
+	}
+	
+	public static List getMessages(String tblName, String id){
+		HashMap<String, Condition> scanFilter = new HashMap<String, Condition>();
+        Condition condition = new Condition()
+            .withComparisonOperator(ComparisonOperator.GT.toString())
+            .withAttributeValueList(new AttributeValue().withN(id));
+        scanFilter.put(DBConstants.HASH_KEY_NAME, condition);
+        ScanRequest scanRequest = new ScanRequest(tblName).withScanFilter(scanFilter);
+		List<Map<String, AttributeValue>> scanList = client.scan(scanRequest).getItems();
+		List resultList = new ArrayList();
+		
+		for(Map<String, AttributeValue> map: scanList){
+			Map<String, String> resultMap = new HashMap<String, String>();
+			resultMap.put(map.get(DBConstants.HASH_KEY_NAME).getN(), map.get(DBConstants.MESSAGE_CONTENT).getS());
+			resultList.add(resultMap);
+		}
+		return resultList;
+	}
 
 	public static PutItemOutcome updateItem(String tblName, Map<String, String> map) {
 		init();

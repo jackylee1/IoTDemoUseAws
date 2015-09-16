@@ -6,6 +6,7 @@ public class DBConstants {
 	public static final String TBL_STATION = "Station";
 	public static final String TBL_DEVICE_TYPE = "DeviceType";
 	public static final String TBL_DEVICE_INSTANCE = "DeviceInstance";
+	public static final String TBL_MESSAGE = "Message";
 	
 	public static final String HASH_KEY_NAME = "ID";
 	
@@ -38,4 +39,7 @@ public class DBConstants {
     public static final String DEVICE_POSITION_ID = "PositionId";
     public static final String DEVICE_REMAIN_STOPS = "RemainStops";
     public static final String DEVICE_REMAIN_TIMES = "RemainTime";
+    
+    //message
+    public static final String MESSAGE_CONTENT = "Content";
 }
