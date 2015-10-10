@@ -20,6 +20,14 @@ public static Map<String, Object> converFromDeviceInstance(Map<String, Attribute
 		mapResult.put(DIConstants.LAST_CONNECT_TIME, map.get(DIConstants.LAST_CONNECT_TIME).getS());
 		mapResult.put(DIConstants.DEVICE_STATUS, map.get(DIConstants.DEVICE_STATUS).getS());
 		mapResult.put(DIConstants.MASTER_KEY, map.get(DIConstants.MASTER_KEY).getS());
+		if(map.containsKey(DIConstants.LATITUDE))
+			mapResult.put(DIConstants.LATITUDE, map.get(DIConstants.LATITUDE).getS());
+		if(map.containsKey(DIConstants.ALTITUDE))
+			mapResult.put(DIConstants.ALTITUDE, map.get(DIConstants.ALTITUDE).getS());
+		if(map.containsKey(DIConstants.LONGITUDE))
+			mapResult.put(DIConstants.LONGITUDE, map.get(DIConstants.LONGITUDE).getS());
+		if(map.containsKey(DIConstants.SPEED))
+			mapResult.put(DIConstants.SPEED, map.get(DIConstants.SPEED).getS());
 		if(map.containsKey(DIConstants.PLATFORM)){
 			mapResult.put(DIConstants.PLATFORM, map.get(DIConstants.PLATFORM).getS());
 		}

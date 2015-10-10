@@ -23,13 +23,16 @@ public class LineRestService {
 		RestResult result = new RestResult();
 		result.setCode(RestResult.FAILED);
 		result.setDescription("fail to post empty datas");
-		if(null==lineNum || null == positionId
-				){
+		if(null==lineNum){
 			return result;
 		}
-	
+		List resultList;
+		if(null == positionId){
+			resultList = BusLineService.getTheLine(lineNum);
+		}else {
+			resultList = BusLineService.getTheLine(lineNum, positionId);
+		}
 		
-		List resultList = BusLineService.getTheLine(lineNum, positionId);
 		if(null == resultList || resultList.size() == 0){
 			return result;
 		}

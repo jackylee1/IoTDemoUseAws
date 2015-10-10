@@ -80,6 +80,22 @@ public class BusLineService {
 		return resultList;
 	}
 	
+	public static List getTheLine(String lineNum){
+		ScanResult allInstance = DBOperator.getAllItem(DBConstants.TBL_DEVICE_INSTANCE);
+		List<Map<String, AttributeValue>> listItems = allInstance.getItems();
+		List<Map<String, AttributeValue>> lineItems = new ArrayList<Map<String, AttributeValue>>();
+		for (Map<String, AttributeValue> mb : listItems) {
+			if(lineNum.equals(mb.get(DIConstants.BUSLINE_NUM).getS())){
+				lineItems.add(mb);
+			}
+		}
+		List<Map<String, Object>> buses = new ArrayList<Map<String, Object>>();
+		for (Map<String, AttributeValue> m : lineItems) {
+			buses.add(TransferDI2Result.converFromDeviceInstance(m));
+		}
+		return buses;
+	}
+	
 	public static List getTheLine(String lineNum, String positionId){
 		List resultList = new ArrayList();
 		//1.get the current bus line
